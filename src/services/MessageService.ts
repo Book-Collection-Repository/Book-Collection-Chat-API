@@ -8,6 +8,15 @@ import { ShippingStatus, ViewingStatus } from "@prisma/client";
 //Class
 export class MessageService {
 
+    //Método para listar uma mensagem
+    async getMessageForId (idMessage: string) {
+        const message = await prisma.message.findUnique({
+            where: {id: idMessage}
+        });
+
+        return message;
+    };
+
     //Método para lista todas as mensagens de uma conversa
     async getMessageOfChat(chatId: string) {
         const messages = await prisma.message.findMany({
@@ -50,6 +59,30 @@ export class MessageService {
         } catch (error) {
             console.error("Error updating message: ", error);
             throw new Error("Failed to create message");
+        }
+    };
+
+    async updateStateShippingAllMessagesOfChat(chatId: string, userId: string) {
+        try {
+            // Atualiza todas as mensagens do chat para o status "SEEN"
+            const updatedMessages = await prisma.message.updateMany({
+                where: {
+                    chatId: chatId,
+                    viewingStatus: 'UNSEEN', // Apenas mensagens com status "UNSEEN"
+                    senderId: {
+                        not: userId,
+                    }
+                },
+                data: {
+                    viewingStatus: 'SEEN', // Define o status como "SEEN"
+                },
+            });
+    
+            console.log(`Updated ${updatedMessages.count} messages to SEEN`);
+            return updatedMessages;
+        } catch (error) {
+            console.error("Error updating messages: ", error);
+            throw new Error("Failed to update messages");
         }
     };
 

@@ -14,9 +14,9 @@ const chatRoutes = Router();
 const chatController = new ChatController();
 
 //Routes
-chatRoutes.get("/allChats", authValidationToken, checkingUserExists, chatController.getListAllChats.bind(chatController));
-chatRoutes.get("/chat/:chatId", checkingChatExists, authValidationToken, checkingUserExists, chatController.getListAllChats.bind(chatController));
-chatRoutes.post("/:senderId", authValidationToken, checkingUserExists, chatController.createChat.bind(chatController));
+chatRoutes.get("/", authValidationToken, checkingUserExists, chatController.getListAllChats.bind(chatController));
+chatRoutes.get("/:chatId", checkingChatExists, authValidationToken, checkingUserExists, chatController.getListChat.bind(chatController));
+chatRoutes.post("/:receiverId", authValidationToken, checkingUserExists, chatController.createChat.bind(chatController));
 chatRoutes.delete("/:chatId", checkingChatExists, authValidationToken, checkingUserExists, chatController.removeChat.bind(chatController));
 
 //Export

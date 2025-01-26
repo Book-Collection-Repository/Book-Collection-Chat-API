@@ -3,16 +3,16 @@ import { Router } from "express";
 
 //Rotas
 import { messageRoutes } from "./messageRoutes";
-import { publicationRoutes } from "./publicationRoutes";
 import { chatRoutes } from "./chatRoutes";
 import { notificationRoutes } from "./notificationRoutes";
+import { redisRoute } from "./redisRoutes";
 
 //Configurações
 const routes = Router();
 
 routes.use("/message", messageRoutes);
-routes.use("/publication", publicationRoutes);
 routes.use("/chat", chatRoutes);
 routes.use("/notification", notificationRoutes);
+routes.use("/redis", redisRoute);
 
 export {routes};

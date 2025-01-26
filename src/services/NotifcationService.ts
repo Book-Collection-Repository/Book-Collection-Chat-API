@@ -6,9 +6,15 @@ import { WebSocketManager } from "../sockets/WebSocketsManeger";
 
 //Types
 import { createNotificationDTO } from "../types/notificationTypes";
+import { RedisClientService } from "./RedisClientService";
 
 //Class
 export class NotificationServices {
+    private redisService: RedisClientService;
+
+    constructor () {
+        this.redisService = new RedisClientService();
+    }
 
     //Listar todas as notificações de um usuário
     async getListAllNotifications (userId: string) {
@@ -39,6 +45,11 @@ export class NotificationServices {
             });
 
             WebSocketManager.emitToUser( newNotification.receiverId, "notification", newNotification);
+
+            const getAlert = await this.redisService.getNotificationForUser(newNotification.receiverId);
+            if (getAlert !== true){
+                await this.redisService.createAlertNotificationForUser(newNotification.receiverId, true);
+            }
 
             return {success: true, data: newNotification}
         } catch (error) {

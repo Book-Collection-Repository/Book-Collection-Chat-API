@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 
 //Services
 import { ChatServices } from "../services/ChatServices";
-import { error } from "console";
+import { WebSocketManager } from "../sockets/WebSocketsManeger";
 
 //Class
 export class ChatController {
@@ -55,7 +55,7 @@ export class ChatController {
         try {
             //Buscando dados
             const idUser = req.id_User;
-            const receiverId = req.params.senderId;
+            const receiverId = req.params.receiverId;
 
             //Validando que o usuário não seja inválido
             if (!receiverId || receiverId === null || receiverId === undefined) return res.status(400).json({error: "Id of chat not found"});
@@ -63,6 +63,9 @@ export class ChatController {
             //Buscando coonversas
             const chats = await this.chatServices.createChat(idUser, receiverId);
             if (!chats.success) return res.status(400).json({error: chats.error});
+
+            //Notificando os usuários
+            await WebSocketManager.emitToUser(receiverId, "createChat", {data: chats});
 
             return res.status(201).json({data: chats});
         } catch (error) {
@@ -81,11 +84,21 @@ export class ChatController {
             //Validando que o chat não seja inválido
             if (!chatId || chatId === null || chatId === undefined) return res.status(400).json({error: "Id of chat not found"});
 
+            //Buscando o chat para ver se ele existe
+            const findChat = await this.chatServices.getListChat(idUser, chatId);
+            if (!findChat.success || !findChat.data) return res.status(404).json({message: "Message not found", error: findChat.error});
+
             //Buscando coonversas
-            const chats = await this.chatServices.getListChat(idUser, chatId);
+            const chats = await this.chatServices.removeChat(idUser, chatId);
             if (!chats.success) return res.status(400).json({error: chats.error});
 
-            return res.status(200).json({data: chats});
+            if (findChat.data.receiverId === idUser) {
+                await WebSocketManager.emitToUser(findChat.data.senderId, "removeChat", {data: chatId});
+            } else {
+                await WebSocketManager.emitToUser(findChat.data.receiverId, "removeChat", {data: chatId});
+            }
+
+            return res.status(200).json({message: "Chat removed"});
         } catch (error) {
             console.error("Erro in listing all chats of user: ", error);
             return res.status(500).json({error: error});

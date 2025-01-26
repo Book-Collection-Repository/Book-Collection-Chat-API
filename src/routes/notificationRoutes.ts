@@ -14,7 +14,7 @@ const notificationController = new NotificationController();
 
 //Rotas
 notificationRoutes.get("/", authValidationToken, checkingUserExists, notificationController.getListAllNotifications.bind(notificationController));
-notificationRoutes.post("/", authValidationToken, checkingUserExists, notificationController.createNotification.bind(notificationController));
+notificationRoutes.post("/", notificationController.createNotification.bind(notificationController));
 
 //Export
 export { notificationRoutes };

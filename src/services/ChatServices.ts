@@ -16,6 +16,10 @@ export class ChatServices {
             },
             orderBy: {
                 createdAt: "asc"
+            },
+            include: {
+                receiver: true,
+                sender: true,
             }
         });
 
@@ -48,6 +52,11 @@ export class ChatServices {
                 data: {
                     senderId,
                     receiverId
+                },
+                include: {
+                    receiver: true,
+                    sender: true,
+                    messages: true,
                 }
             });
 

@@ -18,6 +18,7 @@ import { handleZodError } from "../utils/errorHandler";
 import { WebSocketManager } from "../sockets/WebSocketsManeger";
 import { ChatServices } from "../services/ChatServices";
 import { NotificationServices } from "../services/NotifcationService";
+import { RedisClientService } from "../services/RedisClientService";
 
 //Class
 export class MessageController {
@@ -25,11 +26,13 @@ export class MessageController {
     private messageService: MessageService;
     private chatService: ChatServices;
     private notificationService: NotificationServices;
+    private redisServices: RedisClientService;
 
     constructor() {
         this.messageService = new MessageService();
         this.chatService = new ChatServices();
         this.notificationService = new NotificationServices();
+        this.redisServices = new RedisClientService();
     };
 
     //Método para listar as mensagens de um conversa
@@ -68,7 +71,7 @@ export class MessageController {
             if (!message.success) return res.status(message.status).json({ error: message.message });
 
             //Emitindo notificaçãio para o usuário
-            WebSocketManager.emit("createMessage", { message: message.message });
+            WebSocketManager.emitToUser(idUser, "createMessage", { message: message.message });
             WebSocketManager.emitToUser(findChat.receiverId, "receiverMessage", { message: message.message });
 
             await this.notificationService.createNotification({
@@ -79,6 +82,11 @@ export class MessageController {
                 senderId:idUser,
                 chatId: findChat.id,
             });
+
+            //Criando alerta
+            const findAlerts = await this.redisServices.getNotificationNewMessages(idUser);
+            const alerts = findAlerts ? [...findAlerts, { chatId: findChat.id }] : [{ chatId: findChat.id }];
+            await this.redisServices.salvedNotificationNewMessages(idUser, alerts); 
 
             return res.status(message.status).json({ message: "Create message", contentMessage: message.message });
 
