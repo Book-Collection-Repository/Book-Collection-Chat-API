@@ -74,18 +74,29 @@ export class MessageController {
             WebSocketManager.emitToUser(idUser, "createMessage", { message: message.message });
             if (idUser === findChat.receiverId) {
                 WebSocketManager.emitToUser(findChat.senderId, "receiverMessage", { message: message.message });
+            
+                await this.notificationService.createNotification({
+                    action:"SEE_CHAT",
+                    content:"Send message for you",
+                    receiverId:findChat.senderId,
+                    publicationId:undefined,
+                    senderId:idUser,
+                    chatId: findChat.id,
+                });
+                
             } else if (idUser === findChat.senderId) {
                 WebSocketManager.emitToUser(findChat.receiverId, "receiverMessage", { message: message.message });
+                
+                await this.notificationService.createNotification({
+                    action:"SEE_CHAT",
+                    content:"Send message for you",
+                    receiverId:findChat.receiverId,
+                    publicationId:undefined,
+                    senderId:idUser,
+                    chatId: findChat.id,
+                });
             }
 
-            await this.notificationService.createNotification({
-                action:"SEE_CHAT",
-                content:"Send message for you",
-                receiverId:findChat.receiverId,
-                publicationId:undefined,
-                senderId:idUser,
-                chatId: findChat.id,
-            });
 
             //Criando alerta
             const findAlerts = await this.redisServices.getNotificationNewMessages(idUser);
