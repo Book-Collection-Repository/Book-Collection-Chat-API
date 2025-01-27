@@ -72,7 +72,11 @@ export class MessageController {
 
             //Emitindo notificaçãio para o usuário
             WebSocketManager.emitToUser(idUser, "createMessage", { message: message.message });
-            WebSocketManager.emitToUser(findChat.receiverId, "receiverMessage", { message: message.message });
+            if (idUser === findChat.receiverId) {
+                WebSocketManager.emitToUser(findChat.senderId, "receiverMessage", { message: message.message });
+            } else if (idUser === findChat.senderId) {
+                WebSocketManager.emitToUser(findChat.receiverId, "receiverMessage", { message: message.message });
+            }
 
             await this.notificationService.createNotification({
                 action:"SEE_CHAT",
