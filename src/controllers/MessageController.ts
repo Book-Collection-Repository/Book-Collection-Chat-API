@@ -62,9 +62,9 @@ export class MessageController {
 
             //Validando que o chat não seja inválido
             if (!chatId || chatId === null || chatId === undefined) return res.status(400).json({ error: "Id of chat not found" });
-            
+
             const findChat = await this.chatService.findChatWithId(chatId);
-            if (!findChat) return res.status(404).json({error: "Chta not found"});
+            if (!findChat) return res.status(404).json({ error: "Chta not found" });
 
             //Criando mensagem
             const message = await this.messageService.createMessageForUser({ content, chatId, senderId: idUser });
@@ -74,34 +74,42 @@ export class MessageController {
             WebSocketManager.emitToUser(idUser, "createMessage", { message: message.message });
             if (idUser === findChat.receiverId) {
                 WebSocketManager.emitToUser(findChat.senderId, "receiverMessage", { message: message.message });
-            
+
+                //Criando alerta
+                const findAlerts = await this.redisServices.getNotificationNewMessages(idUser);
+                const alerts = findAlerts ? [...findAlerts, { chatId: findChat.id }] : [{ chatId: findChat.id }];
+                await this.redisServices.salvedNotificationNewMessages(findChat.senderId, alerts);
+
+                WebSocketManager.emitToUser(findChat.senderId, "notificationNewMessage", alerts);
+
                 await this.notificationService.createNotification({
-                    action:"SEE_CHAT",
-                    content:"Send message for you",
-                    receiverId:findChat.senderId,
-                    publicationId:undefined,
-                    senderId:idUser,
+                    action: "SEE_CHAT",
+                    content: "Send message for you",
+                    receiverId: findChat.senderId,
+                    publicationId: undefined,
+                    senderId: idUser,
                     chatId: findChat.id,
                 });
-                
+
             } else if (idUser === findChat.senderId) {
                 WebSocketManager.emitToUser(findChat.receiverId, "receiverMessage", { message: message.message });
-                
+
+                //Criando alerta
+                const findAlerts = await this.redisServices.getNotificationNewMessages(idUser);
+                const alerts = findAlerts ? [...findAlerts, { chatId: findChat.id }] : [{ chatId: findChat.id }];
+                await this.redisServices.salvedNotificationNewMessages(findChat.receiverId, alerts);
+
+                WebSocketManager.emitToUser(findChat.receiverId, "notificationNewMessage", alerts);
+
                 await this.notificationService.createNotification({
-                    action:"SEE_CHAT",
-                    content:"Send message for you",
-                    receiverId:findChat.receiverId,
-                    publicationId:undefined,
-                    senderId:idUser,
+                    action: "SEE_CHAT",
+                    content: "Send message for you",
+                    receiverId: findChat.receiverId,
+                    publicationId: undefined,
+                    senderId: idUser,
                     chatId: findChat.id,
                 });
             }
-
-
-            //Criando alerta
-            const findAlerts = await this.redisServices.getNotificationNewMessages(idUser);
-            const alerts = findAlerts ? [...findAlerts, { chatId: findChat.id }] : [{ chatId: findChat.id }];
-            await this.redisServices.salvedNotificationNewMessages(idUser, alerts); 
 
             return res.status(message.status).json({ message: "Create message", contentMessage: message.message });
 

@@ -48,6 +48,7 @@ export class NotificationServices {
 
             const getAlert = await this.redisService.getNotificationForUser(newNotification.receiverId);
             if (getAlert !== true){
+                WebSocketManager.emitToUser( newNotification.receiverId, "notificationAlert", true);
                 await this.redisService.createAlertNotificationForUser(newNotification.receiverId, true);
             }
 
