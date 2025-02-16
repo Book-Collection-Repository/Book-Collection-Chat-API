@@ -19,6 +19,10 @@ export default function configureSocket(io: Server) {
             io.emit("online-users", users);
         });
 
+        socket.on("writtingMessage", async (data: { userId: string; message: boolean }) => {
+            io.to(data.userId).emit("userWrittingMessage", data.message);
+        });
+
         socket.on("disconnect", async () => {
             console.log(`User disconnected: ${socket.id}`);
 
