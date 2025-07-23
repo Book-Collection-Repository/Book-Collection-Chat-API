@@ -1,0 +1,41 @@
+{
+  "name": "book-collection-chat-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch src/server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Book-Collection-Repository/Book-Collection-Chat-API.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Book-Collection-Repository/Book-Collection-Chat-API/issues"
+  },
+  "homepage": "https://github.com/Book-Collection-Repository/Book-Collection-Chat-API#readme",
+  "description": "",
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "ioredis": "^5.4.2",
+    "jsonwebtoken": "^9.0.2",
+    "prisma": "^6.1.0",
+    "socket.io": "^4.8.1",
+    "uuid": "^11.0.4",
+    "zod": "^3.24.1"
+  }
+}
